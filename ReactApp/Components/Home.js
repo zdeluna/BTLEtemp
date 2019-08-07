@@ -2,6 +2,7 @@ import React, {Component, Fragment} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import {Button, Divider} from 'react-native-elements';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import {Col, Row, Grid} from 'react-native-easy-grid';
 
 const styles = StyleSheet.create({
     topView: {
@@ -10,13 +11,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 
-    tempView: {
-        width: 100,
-        height: 100,
+    temperatureTextView: {
+        width: 90,
+        height: 90,
         backgroundColor: '#e8e8e8',
         justifyContent: 'center',
         alignItems: 'center',
-        margin: 30,
     },
 
     title: {
@@ -29,9 +29,22 @@ const styles = StyleSheet.create({
     button: {
         width: 300,
     },
-    temperature: {
-        fontSize: 60,
+    table: {
+        margin: 30,
+    },
+    temperatureText: {
+        fontSize: 50,
         textAlign: 'center',
+    },
+    column: {
+        height: 90,
+        justifyContent: 'center',
+        alignItems: 'center',
+        textAlignVertical: 'center',
+        flex: 1,
+    },
+    label: {
+        fontSize: 25,
     },
 });
 
@@ -43,9 +56,24 @@ class Home extends Component {
                     <Text style={styles.title}>My Temperature Sensor</Text>
                     <Button style={styles.button} title="Get Car Temperature" />
                 </View>
-                <View style={styles.tempView}>
-                    <Text style={styles.temperature}>34&deg;</Text>
-                </View>
+                <Grid style={styles.table}>
+                    <Col style={styles.column}>
+                        <Row>
+                            <Text style={styles.label}>
+                                Temperature F&deg;:
+                            </Text>
+                        </Row>
+                    </Col>
+                    <Col style={styles.column}>
+                        <Row>
+                            <View style={styles.temperatureTextView}>
+                                <Text style={styles.temperatureText}>
+                                    34&deg;
+                                </Text>
+                            </View>
+                        </Row>
+                    </Col>
+                </Grid>
             </View>
         );
     }
