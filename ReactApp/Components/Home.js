@@ -33,42 +33,60 @@ const styles = StyleSheet.create({
         margin: 30,
     },
     temperatureText: {
-        fontSize: 50,
+        fontSize: 40,
         textAlign: 'center',
     },
     column: {
-        height: 90,
         justifyContent: 'center',
         alignItems: 'center',
-        textAlignVertical: 'center',
-        flex: 1,
     },
+    row: {},
     label: {
         fontSize: 25,
     },
 });
 
 class Home extends Component {
+    state = {temperature: 'NA', humidity: 'NA'};
+
+    getSensorData = () => {
+        this.setState({temperature: '30', humidity: 20});
+    };
+
     render() {
         return (
             <View style={styles.topView}>
                 <View style={styles.topView}>
                     <Text style={styles.title}>My Temperature Sensor</Text>
-                    <Button style={styles.button} title="Get Car Temperature" />
+                    <Button
+                        style={styles.button}
+                        onPress={this.getSensorData}
+                        title="Get Car Temperature"
+                    />
                 </View>
                 <Grid style={styles.table}>
-                    <Col style={styles.column}>
-                        <Row>
+                    <Col size={3} style={styles.column}>
+                        <Row size={1} style={styles.row}>
                             <Text style={styles.label}>
                                 Temperature F&deg;:
                             </Text>
                         </Row>
+                        <Row size={1} style={styles.row}>
+                            <Text style={styles.label}>Humidity:</Text>
+                        </Row>
                     </Col>
-                    <Col style={styles.column}>
-                        <Row>
+                    <Col size={2} style={styles.column}>
+                        <Row size={2} style={styles.row}>
                             <View style={styles.temperatureTextView}>
                                 <Text style={styles.temperatureText}>
-                                    34&deg;
+                                    {this.state.temperature}&deg;
+                                </Text>
+                            </View>
+                        </Row>
+                        <Row size={2} style={styles.row}>
+                            <View style={styles.temperatureTextView}>
+                                <Text style={styles.temperatureText}>
+                                    {this.state.humidity}%
                                 </Text>
                             </View>
                         </Row>
