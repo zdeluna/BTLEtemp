@@ -75,6 +75,8 @@ class Home extends Component {
             appState: '',
             temperature: 'NA',
             humidity: 'NA',
+            deviceID: '',
+            deviceName: 'FeatherESP32',
         };
 
         this.handleDiscoverPeripheral = this.handleDiscoverPeripheral.bind(
@@ -172,10 +174,11 @@ class Home extends Component {
             console.log('Connected to ' + id);
         });
     }
+
     handleStopScan() {
         console.log('Scan is stopped');
         this.setState({scanning: false});
-        connectToDevice('D4-61-9D-38-CE-A1');
+        this.connectToDevice(this.state.deviceID);
     }
 
     startScan() {
@@ -210,6 +213,11 @@ class Home extends Component {
             console.log('Got ble peripheral', peripheral);
             peripherals.set(peripheral.id, peripheral);
             this.setState({peripherals});
+
+            if (peripheral.name == this.state.deviceName) {
+                console.log('FOUND DEVICE: ' + peripheral.id);
+                this.setState({deviceID: peripheral.id});
+            }
         }
     }
 
