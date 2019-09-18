@@ -17,6 +17,8 @@ uint8_t humidity;
 
 #define SERVICE_UUID "c23b7ab5-0301-441a-ac60-1757084297d4"
 #define TEMP_CHARACTERISTIC_UUID "e7ca3a76-9026-4f56-9b35-09da4c3c5eea"
+#define HUMIDITY_CHARACTERISTIC_UUID "8c6fe5b0-0931-41f7-bab5-6b08cb20f524"
+
 
 class MyServerCallbacks: public BLEServerCallbacks {
   void onConnect(BLEServer *pServer) 
@@ -48,8 +50,16 @@ void initBLE() {
                 BLECharacteristic::PROPERTY_NOTIFY    |
                 BLECharacteristic::PROPERTY_INDICATE  
                 );
+  humidityCharacteristic = pService->createCharacteristic(
+                TEMP_CHARACTERISTIC_UUID, 
+                BLECharacteristic::PROPERTY_READ      |
+                BLECharacteristic::PROPERTY_WRITE     |
+                BLECharacteristic::PROPERTY_NOTIFY    |
+                BLECharacteristic::PROPERTY_INDICATE  
+                );
 
   tempCharacteristic->addDescriptor(new BLE2902());
+  humidityCharacteristic->addDescriptor(new BLE2902());
 
   // Start service
   pService->start();
@@ -73,16 +83,17 @@ void setup() {
   Serial.println("Start server");
   
   temperature = 95;
+  humidity = 80;
   initBLE();
 }
 
 void loop() {
   if (deviceConnected) {
     Serial.println("Connected to device");
-    //pCharacteristic->setValue((uint8_t*)&temperature, 4);
-    tempCharacteristic->setValue((uint8_t*)&value, 4);
+    tempCharacteristic->setValue((uint8_t*)&temperature, 4);
+    humidityCharacteristic->setValue((uint8_t*)&humidity, 4);
     tempCharacteristic->notify();
-    value++;
+    humidityCharacteristic->notify();
     delay(3);
   }
 

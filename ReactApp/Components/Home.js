@@ -23,6 +23,10 @@ import BleManager from 'react-native-ble-manager';
 const BleManagerModule = NativeModules.BleManager;
 const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
 
+const serviceUUID = 'c23b7ab5-0301-441a-ac60-1757084297d4';
+const tempCharacteristicUUID = 'e7ca3a76-9026-4f56-9b35-09da4c3c5eea';
+const humidityCharacteristicUUID = '8c6fe5b0-0931-41f7-bab5-6b08cb20f524';
+
 const styles = StyleSheet.create({
     topView: {
         alignSelf: 'center',
@@ -162,49 +166,80 @@ class Home extends Component {
         );
     }
 
-    connectToDevice(id) {
-        BleManager.connect(id).then(() => {
-            let peripherals = this.state.peripherals;
-            let p = peripherals.get(id);
-            if (p) {
-                p.connected = true;
-                peripherals.set(id, p);
-                this.setState({peripherals});
-            }
-            console.log('Connected to ' + id);
-        });
-    }
-
-    handleStopScan() {
-        console.log('Scan is stopped');
-        this.setState({scanning: false});
-        this.connectToDevice(this.state.deviceID);
-    }
-
-    startScan() {
-        if (!this.state.scanning) {
-            this.setState({peripherals: new Map()});
-            BleManager.scan([], 3, true).then(results => {
-                console.log('Scanning...');
-                this.setState({scanning: true});
-            });
+    async retrieveService(deviceID, serviceUUID, characteristicUUID) {
+        try {
+            let peripheralInfo = await BleManager.retrieveServices(deviceID);
+            let readData = await BleManager.read(
+                deviceID,
+                serviceUUID,
+                characteristicUUID,
+            );
+            return readData[0];
+        } catch (error) {
+            console.log(error);
         }
     }
 
-    retrieveConnected() {
-        BleManager.getConnectedPeripherals([]).then(results => {
-            if (results.length == 0) {
-                console.log('No connected peripherals');
-            }
-            console.log(results);
-            var peripherals = this.state.peripherals;
-            for (var i = 0; i < results.length; i++) {
-                var peripheral = results[i];
-                peripheral.connected = true;
-                peripherals.set(peripheral.id, peripheral);
-                this.setState({peripherals});
-            }
-        });
+    async connectToDevice(id) {
+        await BleManager.connect(id);
+        let peripherals = this.state.peripherals;
+        let p = peripherals.get(id);
+        if (p) {
+            p.connected = true;
+            peripherals.set(id, p);
+            this.setState({peripherals});
+        }
+    }
+
+    async handleStopScan() {
+        console.log('Scan is stopped');
+        this.setState({scanning: false});
+
+        await this.connectToDevice(this.state.deviceID);
+
+        let temperature = await this.retrieveService(
+            this.state.deviceID,
+            serviceUUID,
+            tempCharacteristicUUID,
+        );
+
+        let humidity = await this.retrieveService(
+            this.state.deviceID,
+            serviceUUID,
+            humidityCharacteristicUUID,
+        );
+        console.log(
+            'The temperature and humidity is : ' +
+                temperature +
+                ' , ' +
+                humidity,
+        );
+        this.setState({temperature: temperature, humidity: humidity});
+    }
+
+    async startScan() {
+        if (!this.state.scanning) {
+            this.setState({peripherals: new Map()});
+            let results = await BleManager.scan([], 2, true);
+            console.log('Scanning...');
+            this.setState({scanning: true});
+        }
+    }
+
+    async retrieveConnected() {
+        let results = await BleManager.getConnectedPeripherals([]);
+
+        if (results.length == 0) {
+            console.log('No connected peripherals');
+        }
+        console.log(results);
+        let peripherals = this.state.peripherals;
+        for (let i = 0; i < results.length; i++) {
+            let peripheral = results[i];
+            peripheral.connected = true;
+            peripherals.set(peripheral.id, peripheral);
+            this.setState({peripherals});
+        }
     }
 
     handleDiscoverPeripheral(peripheral) {
