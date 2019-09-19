@@ -8,6 +8,7 @@
 
 BLEServer *pServer = NULL;
 BLECharacteristic *tempCharacteristic = NULL;
+BLECharacteristic *humidityCharacteristic = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 uint32_t value = 0;
@@ -51,7 +52,7 @@ void initBLE() {
                 BLECharacteristic::PROPERTY_INDICATE  
                 );
   humidityCharacteristic = pService->createCharacteristic(
-                TEMP_CHARACTERISTIC_UUID, 
+                HUMIDITY_CHARACTERISTIC_UUID, 
                 BLECharacteristic::PROPERTY_READ      |
                 BLECharacteristic::PROPERTY_WRITE     |
                 BLECharacteristic::PROPERTY_NOTIFY    |

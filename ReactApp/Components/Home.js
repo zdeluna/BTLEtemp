@@ -97,7 +97,6 @@ class Home extends Component {
     }
 
     getSensorData = () => {
-        this.setState({temperature: '30', humidity: 20});
         this.startScan();
     };
 
@@ -220,7 +219,7 @@ class Home extends Component {
     async startScan() {
         if (!this.state.scanning) {
             this.setState({peripherals: new Map()});
-            let results = await BleManager.scan([], 2, true);
+            let results = await BleManager.scan([], 3, true);
             console.log('Scanning...');
             this.setState({scanning: true});
         }
@@ -242,16 +241,19 @@ class Home extends Component {
         }
     }
 
-    handleDiscoverPeripheral(peripheral) {
+    async handleDiscoverPeripheral(peripheral) {
         var peripherals = this.state.peripherals;
         if (!peripherals.has(peripheral.id)) {
-            console.log('Got ble peripheral', peripheral);
             peripherals.set(peripheral.id, peripheral);
             this.setState({peripherals});
 
+            /* If we find our ESP temperature device, than we can stop the scan*/
             if (peripheral.name == this.state.deviceName) {
                 console.log('FOUND DEVICE: ' + peripheral.id);
                 this.setState({deviceID: peripheral.id});
+
+                await BleManager.stopScan();
+                this.setState({scanning: false});
             }
         }
     }

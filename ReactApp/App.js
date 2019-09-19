@@ -17,7 +17,6 @@ import {
 } from 'react-native';
 
 import Home from './Components/Home';
-import Test from './Components/Test';
 
 import {
     Header,
