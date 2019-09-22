@@ -81,6 +81,7 @@ class Home extends Component {
             humidity: 'NA',
             deviceID: '',
             deviceName: 'FeatherESP32',
+            connected: false,
         };
 
         this.handleDiscoverPeripheral = this.handleDiscoverPeripheral.bind(
@@ -97,7 +98,16 @@ class Home extends Component {
     }
 
     getSensorData = () => {
-        this.startScan();
+        if (this.state.connected == true) {
+            this.updateCharacteristic(
+                this.state.deviceID,
+                serviceUUID,
+                tempCharacteristicUUID,
+                -9999,
+            );
+        } else {
+            this.startScan();
+        }
     };
 
     componentDidMount() {
@@ -121,6 +131,7 @@ class Home extends Component {
             'BleManagerDidUpdateValueForCharacteristic',
             this.handleUpdateValueForCharacteristic,
         );
+        this.startScan();
     }
     handleAppStateChange(nextAppState) {
         if (
@@ -165,7 +176,7 @@ class Home extends Component {
         );
     }
 
-    async retrieveService(deviceID, serviceUUID, characteristicUUID) {
+    async readCharacteristic(deviceID, serviceUUID, characteristicUUID) {
         try {
             let peripheralInfo = await BleManager.retrieveServices(deviceID);
             let readData = await BleManager.read(
@@ -179,8 +190,28 @@ class Home extends Component {
         }
     }
 
+    async updateCharcteristic(
+        deviceID,
+        serviceUUID,
+        characteristicUUID,
+        characteristicValue,
+    ) {
+        try {
+            let peripheralInfo = await BleManager.retrieveServices(deviceID);
+            await BleManager.write(
+                deviceID,
+                serviceUUID,
+                characteristicUUID,
+                characteristicValue,
+            );
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     async connectToDevice(id) {
         await BleManager.connect(id);
+        this.setState({connect: true});
         let peripherals = this.state.peripherals;
         let p = peripherals.get(id);
         if (p) {
@@ -196,13 +227,13 @@ class Home extends Component {
 
         await this.connectToDevice(this.state.deviceID);
 
-        let temperature = await this.retrieveService(
+        let temperature = await this.readCharacteristic(
             this.state.deviceID,
             serviceUUID,
             tempCharacteristicUUID,
         );
 
-        let humidity = await this.retrieveService(
+        let humidity = await this.readCharacteristic(
             this.state.deviceID,
             serviceUUID,
             humidityCharacteristicUUID,

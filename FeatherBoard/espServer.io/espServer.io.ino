@@ -4,6 +4,8 @@
 #include <BLEServer.h>
 #include <BLE2902.h>
 #include "WiFi.h"
+#include <DHT.h>
+#include <Adafruit_Sensor.h>
 
 
 BLEServer *pServer = NULL;
@@ -20,6 +22,11 @@ uint8_t humidity;
 #define TEMP_CHARACTERISTIC_UUID "e7ca3a76-9026-4f56-9b35-09da4c3c5eea"
 #define HUMIDITY_CHARACTERISTIC_UUID "8c6fe5b0-0931-41f7-bab5-6b08cb20f524"
 
+#define DHTPIN 14 // Digit pin connected to the DHT sensor
+#define DHTTYPE DHT11
+
+DHT dht(DHTPIN, DHTTYPE);
+
 
 class MyServerCallbacks: public BLEServerCallbacks {
   void onConnect(BLEServer *pServer) 
@@ -33,6 +40,34 @@ class MyServerCallbacks: public BLEServerCallbacks {
   }
   
 };
+
+uint8_t readTemperature() {
+  uint8_t temp = dht.readTemperature(true);
+
+  /* If failed to read from sensor */
+  if (isnan(temp)) {
+    Serial.println("Failed to read from DHT sensor!");
+    return -1000;
+  }
+  else {
+    Serial.println(temp);
+    return temp;
+  }
+  
+}
+
+uint8_t readHumidity() {
+  uint8_t humidity = dht.readHumidity();
+  if (isnan(humidity)) {
+    Serial.println("Failed to read from DHT sensor!");
+    return -1000;
+  }
+  else {
+    Serial.println(humidity);
+    return humidity;
+  }
+  
+}
 
 void initBLE() {
 
@@ -62,9 +97,12 @@ void initBLE() {
   tempCharacteristic->addDescriptor(new BLE2902());
   humidityCharacteristic->addDescriptor(new BLE2902());
 
-  // Start service
   pService->start();
+}
 
+
+
+void startAdvertising() {
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
  
@@ -73,7 +111,6 @@ void initBLE() {
   pAdvertising->setMinPreferred(0x12);
   BLEDevice::startAdvertising();
   Serial.println("Waiting for client to notify"); 
-
 }
 
 
@@ -82,15 +119,19 @@ void setup() {
   // Start Serial Communication
   Serial.begin(115200);
   Serial.println("Start server");
-  
+  dht.begin();
   temperature = 95;
   humidity = 80;
   initBLE();
+  startAdvertising();
 }
 
 void loop() {
   if (deviceConnected) {
     Serial.println("Connected to device");
+    temperature = readTemperature();
+    humidity = readHumidity();
+    
     tempCharacteristic->setValue((uint8_t*)&temperature, 4);
     humidityCharacteristic->setValue((uint8_t*)&humidity, 4);
     tempCharacteristic->notify();
