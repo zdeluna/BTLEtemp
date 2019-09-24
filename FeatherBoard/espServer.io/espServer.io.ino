@@ -131,6 +131,7 @@ void loop() {
     Serial.println("Connected to device");
     temperature = readTemperature();
     humidity = readHumidity();
+    Serial.println(temperature);
     
     tempCharacteristic->setValue((uint8_t*)&temperature, 4);
     humidityCharacteristic->setValue((uint8_t*)&humidity, 4);

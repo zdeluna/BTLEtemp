@@ -19,6 +19,7 @@ import {Button, Divider} from 'react-native-elements';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {Col, Row, Grid} from 'react-native-easy-grid';
 import BleManager from 'react-native-ble-manager';
+import {bytesToString} from 'convert-string';
 
 const BleManagerModule = NativeModules.BleManager;
 const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
@@ -98,16 +99,7 @@ class Home extends Component {
     }
 
     getSensorData = () => {
-        if (this.state.connected == true) {
-            this.updateCharacteristic(
-                this.state.deviceID,
-                serviceUUID,
-                tempCharacteristicUUID,
-                -9999,
-            );
-        } else {
-            this.startScan();
-        }
+        this.startScan();
     };
 
     componentDidMount() {
@@ -131,7 +123,6 @@ class Home extends Component {
             'BleManagerDidUpdateValueForCharacteristic',
             this.handleUpdateValueForCharacteristic,
         );
-        this.startScan();
     }
     handleAppStateChange(nextAppState) {
         if (
@@ -174,6 +165,18 @@ class Home extends Component {
                 data.characteristic,
             data.value,
         );
+        if (
+            data.characteristic.toLowerCase() ==
+            tempCharacteristicUUID.toLowerCase()
+        ) {
+            this.setState({temperature: data.value[0]});
+        }
+        if (
+            data.characteristic.toLowerCase() ==
+            humidityCharacteristicUUID.toLowerCase()
+        ) {
+            this.setState({humidity: data.value[0]});
+        }
     }
 
     async readCharacteristic(deviceID, serviceUUID, characteristicUUID) {
@@ -190,20 +193,24 @@ class Home extends Component {
         }
     }
 
-    async updateCharcteristic(
-        deviceID,
-        serviceUUID,
-        characteristicUUID,
-        characteristicValue,
-    ) {
+    async startNotification(deviceID, serviceUUID, characteristicUUID) {
         try {
             let peripheralInfo = await BleManager.retrieveServices(deviceID);
-            await BleManager.write(
+            await BleManager.startNotification(
                 deviceID,
                 serviceUUID,
                 characteristicUUID,
-                characteristicValue,
             );
+            /*
+            bleManagerEmitter.addListener(
+                'BleManagerDidUpdateValueForCharacteristic',
+                ({value, peripheral, characteristic, service}) => {
+                    const data = bytesToString(value);
+                    console.log(
+                        `Received ${data} for characteristic ${characteristic}`,
+                    );
+                },
+);*/
         } catch (error) {
             console.log(error);
         }
@@ -211,7 +218,7 @@ class Home extends Component {
 
     async connectToDevice(id) {
         await BleManager.connect(id);
-        this.setState({connect: true});
+        this.setState({connected: true});
         let peripherals = this.state.peripherals;
         let p = peripherals.get(id);
         if (p) {
@@ -245,6 +252,26 @@ class Home extends Component {
                 humidity,
         );
         this.setState({temperature: temperature, humidity: humidity});
+
+        this.startNotification(
+            this.state.deviceID,
+            serviceUUID,
+            tempCharacteristicUUID,
+        );
+
+        this.startNotification(
+            this.state.deviceID,
+            serviceUUID,
+            humidityCharacteristicUUID,
+        );
+
+        /*
+        BleManager.startNotification(
+            this.state.deviceID,
+            serviceUUID,
+            tempCharacteristicUUID,
+);
+*/
     }
 
     async startScan() {
@@ -297,7 +324,7 @@ class Home extends Component {
                     <Button
                         style={styles.button}
                         onPress={this.getSensorData}
-                        title="Get Car Temperature"
+                        title="Get Sensor Data"
                     />
                 </View>
                 <Grid style={styles.table}>
