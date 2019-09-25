@@ -14,8 +14,11 @@ BLECharacteristic *humidityCharacteristic = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 uint32_t value = 0;
-uint8_t temperature;
-uint8_t humidity;
+uint8_t temperature = 0;
+uint8_t humidity = 0;
+
+uint8_t newTemperature = 0;
+uint8_t newHumidity = 0;
 
 
 #define SERVICE_UUID "c23b7ab5-0301-441a-ac60-1757084297d4"
@@ -120,23 +123,28 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Start server");
   dht.begin();
-  temperature = 95;
-  humidity = 80;
   initBLE();
   startAdvertising();
 }
 
 void loop() {
   if (deviceConnected) {
-    Serial.println("Connected to device");
-    temperature = readTemperature();
-    humidity = readHumidity();
-    Serial.println(temperature);
     
-    tempCharacteristic->setValue((uint8_t*)&temperature, 4);
-    humidityCharacteristic->setValue((uint8_t*)&humidity, 4);
-    tempCharacteristic->notify();
-    humidityCharacteristic->notify();
+    newTemperature = readTemperature();
+    newHumidity = readHumidity();
+
+    if (newTemperature != temperature){
+      temperature = newTemperature;
+      tempCharacteristic->setValue((uint8_t*)&temperature, 4);
+      tempCharacteristic->notify();
+    }
+
+    if (newHumidity != humidity){
+      humidity = newHumidity;
+      humidityCharacteristic->setValue((uint8_t*)&humidity, 4);
+      humidityCharacteristic->notify(); 
+    }
+
     delay(3);
   }
 

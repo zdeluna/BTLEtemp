@@ -165,10 +165,15 @@ class Home extends Component {
                 data.characteristic,
             data.value,
         );
+        console.log('Test');
+        console.log(data.characteristic.toLowerCase());
+        console.log(tempCharacteristicUUID.toLowerCase());
+
         if (
             data.characteristic.toLowerCase() ==
             tempCharacteristicUUID.toLowerCase()
         ) {
+            console.log('changed temperature');
             this.setState({temperature: data.value[0]});
         }
         if (
