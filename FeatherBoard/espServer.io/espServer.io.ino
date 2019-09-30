@@ -13,7 +13,6 @@ BLECharacteristic *tempCharacteristic = NULL;
 BLECharacteristic *humidityCharacteristic = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
-uint32_t value = 0;
 uint8_t temperature = 0;
 uint8_t humidity = 0;
 
@@ -53,7 +52,6 @@ uint8_t readTemperature() {
     return -1000;
   }
   else {
-    Serial.println(temp);
     return temp;
   }
   
@@ -66,7 +64,6 @@ uint8_t readHumidity() {
     return -1000;
   }
   else {
-    Serial.println(humidity);
     return humidity;
   }
   
@@ -134,14 +131,20 @@ void loop() {
     newHumidity = readHumidity();
 
     if (newTemperature != temperature){
+      Serial.println("new temperature reading");
+      Serial.println(newTemperature);
+      Serial.println(temperature);
       temperature = newTemperature;
-      tempCharacteristic->setValue((uint8_t*)&temperature, 4);
+      tempCharacteristic->setValue((uint8_t*)&temperature, 1);
       tempCharacteristic->notify();
     }
 
     if (newHumidity != humidity){
+      Serial.println("new humidity reading");
+      Serial.println(newHumidity);
+      Serial.println(humidity);
       humidity = newHumidity;
-      humidityCharacteristic->setValue((uint8_t*)&humidity, 4);
+      humidityCharacteristic->setValue((uint8_t*)&humidity, 1);
       humidityCharacteristic->notify(); 
     }
 

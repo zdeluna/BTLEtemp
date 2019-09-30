@@ -60,6 +60,12 @@ const styles = StyleSheet.create({
         fontSize: 40,
         textAlign: 'center',
     },
+    statusMessage: {
+        color: 'red',
+        fontWeight: 'bold',
+        fontSize: 16,
+        margin: 10,
+    },
     column: {
         justifyContent: 'center',
         alignItems: 'center',
@@ -83,6 +89,7 @@ class Home extends Component {
             deviceID: '',
             deviceName: 'FeatherESP32',
             connected: false,
+            statusMessage: '',
         };
 
         this.handleDiscoverPeripheral = this.handleDiscoverPeripheral.bind(
@@ -123,6 +130,7 @@ class Home extends Component {
             'BleManagerDidUpdateValueForCharacteristic',
             this.handleUpdateValueForCharacteristic,
         );
+        this.setState({statusMessage: 'Cannot connect to sensor device.'});
     }
     handleAppStateChange(nextAppState) {
         if (
@@ -155,6 +163,7 @@ class Home extends Component {
             this.setState({peripherals});
         }
         console.log('Disconnected from ' + data.peripheral);
+        this.setState({connected: false});
     }
 
     handleUpdateValueForCharacteristic(data) {
@@ -165,9 +174,6 @@ class Home extends Component {
                 data.characteristic,
             data.value,
         );
-        console.log('Test');
-        console.log(data.characteristic.toLowerCase());
-        console.log(tempCharacteristicUUID.toLowerCase());
 
         if (
             data.characteristic.toLowerCase() ==
@@ -180,6 +186,7 @@ class Home extends Component {
             data.characteristic.toLowerCase() ==
             humidityCharacteristicUUID.toLowerCase()
         ) {
+            console.log('changed humidity');
             this.setState({humidity: data.value[0]});
         }
     }
@@ -198,38 +205,61 @@ class Home extends Component {
         }
     }
 
-    async startNotification(deviceID, serviceUUID, characteristicUUID) {
+    async startNotifications() {
         try {
-            let peripheralInfo = await BleManager.retrieveServices(deviceID);
-            await BleManager.startNotification(
-                deviceID,
-                serviceUUID,
-                characteristicUUID,
+            let peripheralInfo = await BleManager.retrieveServices(
+                this.state.deviceID,
             );
-            /*
-            bleManagerEmitter.addListener(
-                'BleManagerDidUpdateValueForCharacteristic',
-                ({value, peripheral, characteristic, service}) => {
-                    const data = bytesToString(value);
-                    console.log(
-                        `Received ${data} for characteristic ${characteristic}`,
-                    );
-                },
-);*/
+            await BleManager.startNotification(
+                this.state.deviceID,
+                serviceUUID,
+                humidityCharacteristicUUID,
+            );
+            BleManager.startNotification(
+                this.state.deviceID,
+                serviceUUID,
+                tempCharacteristicUUID,
+            );
         } catch (error) {
             console.log(error);
         }
     }
 
     async connectToDevice(id) {
-        await BleManager.connect(id);
-        this.setState({connected: true});
-        let peripherals = this.state.peripherals;
-        let p = peripherals.get(id);
-        if (p) {
-            p.connected = true;
-            peripherals.set(id, p);
-            this.setState({peripherals});
+        try {
+            await BleManager.connect(id);
+            let peripherals = this.state.peripherals;
+            let p = peripherals.get(id);
+            if (p) {
+                p.connected = true;
+                peripherals.set(id, p);
+                this.setState({peripherals});
+                this.setState({connected: true, statusMessage: ''});
+            }
+        } catch (error) {
+            this.setState({statusMessage: 'Cannot connect to sensor device'});
+        }
+    }
+
+    async readDataFromSensorDevice() {
+        try {
+            await this.connectToDevice(this.state.deviceID);
+
+            let temperature = await this.readCharacteristic(
+                this.state.deviceID,
+                serviceUUID,
+                tempCharacteristicUUID,
+            );
+
+            let humidity = await this.readCharacteristic(
+                this.state.deviceID,
+                serviceUUID,
+                humidityCharacteristicUUID,
+            );
+            this.setState({temperature: temperature, humidity: humidity});
+            this.startNotifications();
+        } catch (error) {
+            console.log(error);
         }
     }
 
@@ -237,46 +267,10 @@ class Home extends Component {
         console.log('Scan is stopped');
         this.setState({scanning: false});
 
-        await this.connectToDevice(this.state.deviceID);
-
-        let temperature = await this.readCharacteristic(
-            this.state.deviceID,
-            serviceUUID,
-            tempCharacteristicUUID,
-        );
-
-        let humidity = await this.readCharacteristic(
-            this.state.deviceID,
-            serviceUUID,
-            humidityCharacteristicUUID,
-        );
-        console.log(
-            'The temperature and humidity is : ' +
-                temperature +
-                ' , ' +
-                humidity,
-        );
-        this.setState({temperature: temperature, humidity: humidity});
-
-        this.startNotification(
-            this.state.deviceID,
-            serviceUUID,
-            tempCharacteristicUUID,
-        );
-
-        this.startNotification(
-            this.state.deviceID,
-            serviceUUID,
-            humidityCharacteristicUUID,
-        );
-
-        /*
-        BleManager.startNotification(
-            this.state.deviceID,
-            serviceUUID,
-            tempCharacteristicUUID,
-);
-*/
+        if (this.state.deviceID) this.readDataFromSensorDevice();
+        else {
+            this.setState({statusMessage: 'Sensor not found.'});
+        }
     }
 
     async startScan() {
@@ -331,6 +325,11 @@ class Home extends Component {
                         onPress={this.getSensorData}
                         title="Get Sensor Data"
                     />
+                </View>
+                <View>
+                    <Text style={styles.statusMessage}>
+                        {this.state.statusMessage}
+                    </Text>
                 </View>
                 <Grid style={styles.table}>
                     <Col size={3} style={styles.column}>
