@@ -8,7 +8,7 @@ import BleManager from 'react-native-ble-manager';
 import {bytesToString} from 'convert-string';
 
 const BleManagerModule = NativeModules.BleManager;
-const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
+//const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
 
 const serviceUUID = 'c23b7ab5-0301-441a-ac60-1757084297d4';
 const tempCharacteristicUUID = 'e7ca3a76-9026-4f56-9b35-09da4c3c5eea';
@@ -17,13 +17,32 @@ const humidityCharacteristicUUID = '8c6fe5b0-0931-41f7-bab5-6b08cb20f524';
 export default class BLEManager {
     constructor() {
         this.deviceName = 'FeatherESP32';
+        this.deviceID = '';
         this.peripherals = new Map();
         this.scanning = false;
         this.temperature = 'NA';
         this.humidity = 'NA';
         this.connected = false;
         this.statusMessage = '';
+        this.bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
+        BleManager.start({showAlert: false});
+        this.addListeners();
     }
+
+    addListeners = () => {
+        this.handlerDiscover = this.bleManagerEmitter.addListener(
+            'BleManagerDiscoverPeripheral',
+            this.handleDiscoverPeripheral,
+        );
+        this.handlerStop = this.bleManagerEmitter.addListener(
+            'BleManagerStopScan',
+            this.handleStopScan,
+        );
+        this.handlerDisconnect = this.bleManagerEmitter.addListener(
+            'BleManagerDisconnectPeripheral',
+            this.handleDisconnectedPeripheral,
+        );
+    };
 
     handleDisconnectedPeripheral = data => {
         let peripherals = this.peripherals;
@@ -35,31 +54,6 @@ export default class BLEManager {
         }
         console.log('Disconnected from ' + data.peripheral);
         this.connected = false;
-    };
-
-    handleUpdateValueForCharacteristic = data => {
-        console.log(
-            'Received data from ' +
-                data.peripheral +
-                ' characteristic ' +
-                data.characteristic,
-            data.value,
-        );
-
-        if (
-            data.characteristic.toLowerCase() ==
-            tempCharacteristicUUID.toLowerCase()
-        ) {
-            console.log('changed temperature');
-            this.temperature = data.value[0];
-        }
-        if (
-            data.characteristic.toLowerCase() ==
-            humidityCharacteristicUUID.toLowerCase()
-        ) {
-            console.log('changed humidity');
-            this.humidity = data.value[0];
-        }
     };
 
     readCharacteristic = async (deviceID, serviceUUID, characteristicUUID) => {
@@ -116,6 +110,7 @@ export default class BLEManager {
 
     readDataFromSensorDevice = async () => {
         try {
+            console.log('read data from function');
             await this.connectToDevice(this.deviceID);
 
             let temperature = await this.readCharacteristic(
@@ -145,6 +140,7 @@ export default class BLEManager {
         else {
             this.statusMessage = 'Sensor not found.';
         }
+        console.log('status: ' + this.statusMessage);
     };
 
     startScan = async () => {

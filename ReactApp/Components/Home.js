@@ -20,6 +20,9 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import {Col, Row, Grid} from 'react-native-easy-grid';
 
 import BLEManager from './BLEManager.js';
+const serviceUUID = 'c23b7ab5-0301-441a-ac60-1757084297d4';
+const tempCharacteristicUUID = 'e7ca3a76-9026-4f56-9b35-09da4c3c5eea';
+const humidityCharacteristicUUID = '8c6fe5b0-0931-41f7-bab5-6b08cb20f524';
 
 const styles = StyleSheet.create({
     topView: {
@@ -85,7 +88,38 @@ class Home extends Component {
             statusMessage: '',
         };
         this.BLEManager = new BLEManager();
+        console.log('IN HOME: ' + this.BLEManager.deviceName);
+        console.log('IN HOME: ' + this.BLEManager.bleManagerEmitter);
     }
+
+    componentDidMount() {
+        this.handlerUpdateSensorData = this.BLEManager.bleManagerEmitter.addListener(
+            'BleManagerDidUpdateValueForCharacteristic',
+            this.updateSensorData,
+        );
+    }
+
+    componenentWillUnMount() {
+        this.handlerUpdateSensorData.remove();
+    }
+
+    updateSensorData = data => {
+        console.log('Sensor Data has Updated');
+        if (
+            data.characteristic.toLowerCase() ==
+            tempCharacteristicUUID.toLowerCase()
+        ) {
+            console.log('changed temperature');
+            this.setState({temperature: data.value[0]});
+        }
+        if (
+            data.characteristic.toLowerCase() ==
+            humidityCharacteristicUUID.toLowerCase()
+        ) {
+            console.log('changed humidity');
+            this.setState({humidity: data.value[0]});
+        }
+    };
 
     getSensorData = () => {
         this.BLEManager.startScan();
