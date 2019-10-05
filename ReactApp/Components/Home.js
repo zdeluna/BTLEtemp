@@ -1,7 +1,6 @@
 import React, {Component, Fragment} from 'react';
 import {
     AppRegistry,
-    StyleSheet,
     Text,
     View,
     TouchableHighlight,
@@ -18,59 +17,12 @@ import {
 import {Button, Divider} from 'react-native-elements';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {Col, Row, Grid} from 'react-native-easy-grid';
+import styles from './Home.style.js';
 
 import BLEManager from './BLEManager.js';
 const serviceUUID = 'c23b7ab5-0301-441a-ac60-1757084297d4';
 const tempCharacteristicUUID = 'e7ca3a76-9026-4f56-9b35-09da4c3c5eea';
 const humidityCharacteristicUUID = '8c6fe5b0-0931-41f7-bab5-6b08cb20f524';
-
-const styles = StyleSheet.create({
-    topView: {
-        alignSelf: 'center',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-
-    temperatureTextView: {
-        width: 90,
-        height: 90,
-        backgroundColor: '#e8e8e8',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-
-    title: {
-        color: 'blue',
-        fontWeight: 'bold',
-        fontSize: 25,
-        textAlign: 'center',
-        margin: 50,
-    },
-    button: {
-        width: 300,
-    },
-    table: {
-        margin: 30,
-    },
-    temperatureText: {
-        fontSize: 40,
-        textAlign: 'center',
-    },
-    statusMessage: {
-        color: 'red',
-        fontWeight: 'bold',
-        fontSize: 16,
-        margin: 10,
-    },
-    column: {
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    row: {},
-    label: {
-        fontSize: 25,
-    },
-});
 
 class Home extends Component {
     constructor() {
