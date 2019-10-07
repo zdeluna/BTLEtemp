@@ -10,9 +10,11 @@ import {bytesToString} from 'convert-string';
 const BleManagerModule = NativeModules.BleManager;
 //const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
 
-const serviceUUID = 'c23b7ab5-0301-441a-ac60-1757084297d4';
-const tempCharacteristicUUID = 'e7ca3a76-9026-4f56-9b35-09da4c3c5eea';
-const humidityCharacteristicUUID = '8c6fe5b0-0931-41f7-bab5-6b08cb20f524';
+import {
+    SERVICE_UUID,
+    TEMP_CHARACTERISTIC_UUID,
+    HUMIDITY_CHARACTERISTIC_UUID,
+} from 'react-native-dotenv';
 
 export default class BLEManager {
     constructor() {
@@ -77,13 +79,13 @@ export default class BLEManager {
             );
             await BleManager.startNotification(
                 this.deviceID,
-                serviceUUID,
-                humidityCharacteristicUUID,
+                SERVICE_UUID,
+                HUMIDITY_CHARACTERISTIC_UUID,
             );
             BleManager.startNotification(
                 this.deviceID,
-                serviceUUID,
-                tempCharacteristicUUID,
+                SERVICE_UUID,
+                TEMP_CHARACTERISTIC_UUID,
             );
         } catch (error) {
             console.log(error);
@@ -115,17 +117,18 @@ export default class BLEManager {
 
             let temperature = await this.readCharacteristic(
                 this.deviceID,
-                serviceUUID,
-                tempCharacteristicUUID,
+                SERVICE_UUID,
+                TEMP_CHARACTERISTIC_UUID,
             );
 
             let humidity = await this.readCharacteristic(
                 this.deviceID,
-                serviceUUID,
-                humidityCharacteristicUUID,
+                SERVICE_UUID,
+                HUMIDITY_CHARACTERISTIC_UUID,
             );
             this.temperature = temperature;
             this.humidity = humidity;
+
             this.startNotifications();
         } catch (error) {
             console.log(error);
@@ -144,6 +147,7 @@ export default class BLEManager {
     };
 
     startScan = async () => {
+        console.log('env: ' + SERVICE_UUID);
         if (!this.scanning) {
             this.peripherals = new Map();
             let results = await BleManager.scan([], 3, true);
