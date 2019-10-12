@@ -24,7 +24,7 @@ import {
     HUMIDITY_CHARACTERISTIC_UUID,
 } from 'react-native-dotenv';
 
-import BLEManager from './BLEManager.js';
+import BLEManager from './BLEManager';
 
 class Home extends Component {
     constructor() {
@@ -41,52 +41,49 @@ class Home extends Component {
             connected: false,
             statusMessage: '',
         };
-        this.BLEManager = new BLEManager();
-        console.log('IN HOME: ' + this.BLEManager.deviceName);
-        console.log('IN HOME: ' + this.BLEManager.bleManagerEmitter);
     }
 
     componentDidMount() {
+        /*
         this.handlerUpdateSensorData = this.BLEManager.bleManagerEmitter.addListener(
             'BleManagerDidUpdateValueForCharacteristic',
             this.updateSensorData,
-        );
+);*/
     }
 
     componenentWillUnMount() {
         this.handlerUpdateSensorData.remove();
     }
 
-    updateSensorData = data => {
-        console.log('Sensor Data has Updated');
-        if (
-            data.characteristic.toLowerCase() ==
-            TEMP_CHARACTERISTIC_UUID.toLowerCase()
-        ) {
-            console.log('changed temperature');
-            this.setState({temperature: data.value[0]});
-        }
-        if (
-            data.characteristic.toLowerCase() ==
-            HUMIDITY_CHARACTERISTIC_UUID.toLowerCase()
-        ) {
-            console.log('changed humidity');
-            this.setState({humidity: data.value[0]});
-        }
+    getSensorData = (temp, humidity) => {
+        console.log(
+            'IN SENSOR FUNCTION ' + 'temp: ' + temp + 'humidity: ' + humidity,
+        );
+        this.setState({temperature: temp, humidity: humidity});
     };
 
-    getSensorData = () => {
-        this.BLEManager.startScan();
+    updateStatus = message => {
+        console.log('Update STATUS: ' + message);
+        this.setState({statusMessage: message});
     };
 
     render() {
         return (
             <View style={styles.topView}>
+                <View>
+                    <BLEManager
+                        onSensorUpdate={(event, temp, humidity) =>
+                            this.getSensorData(event, temp, humidity)
+                        }
+                        setClick={click => (this.startScan = click)}
+                        onStatusUpdate={this.updateStatus}
+                    />
+                </View>
                 <View style={styles.topView}>
                     <Text style={styles.title}>My Temperature Sensor</Text>
                     <Button
                         style={styles.button}
-                        onPress={this.getSensorData}
+                        onPress={() => this.startScan()}
                         title="Get Sensor Data"
                     />
                 </View>

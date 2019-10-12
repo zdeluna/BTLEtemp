@@ -1,3 +1,4 @@
+import React, {Component} from 'react';
 import {
     NativeAppEventEmitter,
     NativeEventEmitter,
@@ -8,7 +9,6 @@ import BleManager from 'react-native-ble-manager';
 import {bytesToString} from 'convert-string';
 
 const BleManagerModule = NativeModules.BleManager;
-//const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
 
 import {
     SERVICE_UUID,
@@ -16,8 +16,9 @@ import {
     HUMIDITY_CHARACTERISTIC_UUID,
 } from 'react-native-dotenv';
 
-export default class BLEManager {
+class BLEManager extends Component {
     constructor() {
+        super();
         this.deviceName = 'FeatherESP32';
         this.deviceID = '';
         this.peripherals = new Map();
@@ -28,7 +29,11 @@ export default class BLEManager {
         this.statusMessage = '';
         this.bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
         BleManager.start({showAlert: false});
+    }
+
+    componentDidMount() {
         this.addListeners();
+        this.props.setClick(this.startScan);
     }
 
     addListeners = () => {
@@ -44,6 +49,28 @@ export default class BLEManager {
             'BleManagerDisconnectPeripheral',
             this.handleDisconnectedPeripheral,
         );
+        this.handlerUpdate = this.bleManagerEmitter.addListener(
+            'BleManagerDidUpdateValueForCharacteristic',
+            this.updateSensorData,
+        );
+    };
+    updateSensorData = data => {
+        console.log('Sensor Data has Updated');
+        if (
+            data.characteristic.toLowerCase() ==
+            TEMP_CHARACTERISTIC_UUID.toLowerCase()
+        ) {
+            console.log('changed temperature');
+            this.setState({temperature: data.value[0]});
+        }
+        if (
+            data.characteristic.toLowerCase() ==
+            HUMIDITY_CHARACTERISTIC_UUID.toLowerCase()
+        ) {
+            console.log('changed humidity');
+            this.setState({humidity: data.value[0]});
+        }
+        this.props.onSensorUpdate(this.state.temperature, this.state.humidity);
     };
 
     handleDisconnectedPeripheral = data => {
@@ -106,7 +133,10 @@ export default class BLEManager {
                 this.statusMessage = '';
             }
         } catch (error) {
+            console.log('Dispatch status update');
             this.statusMessage = 'Cannot connect to sensor device';
+            this.props.onStatusUpdate(this.statusMessage);
+            return error;
         }
     };
 
@@ -131,19 +161,24 @@ export default class BLEManager {
 
             this.startNotifications();
         } catch (error) {
-            console.log(error);
+            return error;
         }
     };
 
     handleStopScan = async () => {
-        console.log('Scan is stopped');
-        this.scanning = false;
+        try {
+            console.log('Scan is stopped');
+            this.scanning = false;
 
-        if (this.deviceID) this.readDataFromSensorDevice();
-        else {
-            this.statusMessage = 'Sensor not found.';
+            if (this.deviceID) this.readDataFromSensorDevice();
+            else {
+                this.statusMessage = 'Sensor not found.';
+                this.props.onStatusUpdate(this.statusMessage);
+            }
+            console.log('status: ' + this.statusMessage);
+        } catch (error) {
+            console.log('ERROR AFTER STOP SCAN');
         }
-        console.log('status: ' + this.statusMessage);
     };
 
     startScan = async () => {
@@ -188,4 +223,9 @@ export default class BLEManager {
             }
         }
     };
+    render() {
+        return null;
+    }
 }
+
+export default BLEManager;
