@@ -2,6 +2,8 @@
 
 This project uses an ESP32 microcontroller to measure temperature/humidity and sends sensor data via BlueTooth Low Energy (BLE) to an application on a mobile device made with React Native
 
+![Screenshot 1](/ReactApp/static/images/SimulatorScreenshot.png?raw=true 'Screenshot 1')
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
@@ -26,8 +28,6 @@ npm install -g react-native-cli
 
 On Xcode, to run the application, plug in a mobile device with Bluetooth enabled before running.
 
-```
-
 ## Built With
 
 -   [React-Native](https://facebook.github.io/react-native/)
@@ -36,4 +36,3 @@ On Xcode, to run the application, plug in a mobile device with Bluetooth enabled
 ## Authors
 
 -   **Zach DeLuna** - _Initial work_ - (https://github.com/zdeluna)
-```

@@ -43,13 +43,7 @@ class Home extends Component {
         };
     }
 
-    componentDidMount() {
-        /*
-        this.handlerUpdateSensorData = this.BLEManager.bleManagerEmitter.addListener(
-            'BleManagerDidUpdateValueForCharacteristic',
-            this.updateSensorData,
-);*/
-    }
+    componentDidMount() {}
 
     componenentWillUnMount() {
         this.handlerUpdateSensorData.remove();
