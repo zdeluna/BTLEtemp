@@ -10,8 +10,15 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-You will need to create an ESP32 microcontroller such as Adafruit's Huzzah32. You will also need a temperature sensor such as the DHT 11.
 You will also need XCode to run the React Native application.
+
+Components to build circuit
+
+-   ESP32 microcontroller
+-   DHT 11 or DHT 22 Temperature Sensor
+-   10k Ohm resistor
+-   Jumper wires
+-   Breadboard
 
 ### Installing
 
