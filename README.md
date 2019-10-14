@@ -3,6 +3,7 @@
 This project uses an ESP32 microcontroller to measure temperature/humidity and sends sensor data via BlueTooth Low Energy (BLE) to an application on a mobile device made with React Native
 
 ![Screenshot 1](/ReactApp/static/images/SimulatorScreenshot.png?raw=true 'Screenshot 1')
+![Screenshot 2](/ReactApp/static/images/ESP_Sketch.png?raw=true 'Screenshot 2')
 
 ## Getting Started
 
