@@ -4,9 +4,7 @@
 #include <BLEServer.h>
 #include <BLE2902.h>
 #include "WiFi.h"
-#include <DHT.h>
-#include <Adafruit_Sensor.h>
-
+#include "TemperatureSensor.h"
 
 BLEServer *pServer = NULL;
 BLECharacteristic *tempCharacteristic = NULL;
@@ -24,11 +22,7 @@ uint8_t newHumidity = 0;
 #define TEMP_CHARACTERISTIC_UUID "e7ca3a76-9026-4f56-9b35-09da4c3c5eea"
 #define HUMIDITY_CHARACTERISTIC_UUID "8c6fe5b0-0931-41f7-bab5-6b08cb20f524"
 
-#define DHTPIN 14 // Digit pin connected to the DHT sensor
-#define DHTTYPE DHT11
-
-DHT dht(DHTPIN, DHTTYPE);
-
+TemperatureSensor sensor(14);
 
 class MyServerCallbacks: public BLEServerCallbacks {
   void onConnect(BLEServer *pServer) 
@@ -42,32 +36,6 @@ class MyServerCallbacks: public BLEServerCallbacks {
   }
   
 };
-
-uint8_t readTemperature() {
-  uint8_t temp = dht.readTemperature(true);
-
-  /* If failed to read from sensor */
-  if (isnan(temp)) {
-    Serial.println("Failed to read from DHT sensor!");
-    return -1000;
-  }
-  else {
-    return temp;
-  }
-  
-}
-
-uint8_t readHumidity() {
-  uint8_t humidity = dht.readHumidity();
-  if (isnan(humidity)) {
-    Serial.println("Failed to read from DHT sensor!");
-    return -1000;
-  }
-  else {
-    return humidity;
-  }
-  
-}
 
 void initBLE() {
 
@@ -119,16 +87,15 @@ void setup() {
   // Start Serial Communication
   Serial.begin(115200);
   Serial.println("Start server");
-  dht.begin();
   initBLE();
   startAdvertising();
-}
+  }
 
 void loop() {
   if (deviceConnected) {
     
-    newTemperature = readTemperature();
-    newHumidity = readHumidity();
+    newTemperature = sensor.getTemperature();
+    newHumidity = sensor.getHumidity();
 
     if (newTemperature != temperature){
       Serial.println("new temperature reading");
