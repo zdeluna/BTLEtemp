@@ -5,7 +5,6 @@
 #include <DHT.h>
 #include <Adafruit_Sensor.h>
 
-#define DHTPIN 14 // Digit pin connected to the DHT sensor
 #define DHTTYPE DHT11
 
 class TemperatureSensor
@@ -13,8 +12,11 @@ class TemperatureSensor
 {
 	public:
 		TemperatureSensor(int pin);
+		~TemperatureSensor();
 		uint8_t getTemperature();
 		uint8_t getHumidity();
+		DHT *dht;
+
 	private:
 		int _pin;
 };

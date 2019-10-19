@@ -3,18 +3,23 @@
 #include <DHT.h>
 #include <Adafruit_Sensor.h>
 
-DHT dht(DHTPIN, DHTTYPE);	
 
 TemperatureSensor::TemperatureSensor(int pin)
 {
-	//DHT dht(pin, DHTTYPE);	
-	dht.begin();
+  	dht = new DHT(pin, DHTTYPE);
+	dht->begin();
 	_pin = pin;
 
 }
 
+TemperatureSensor::~TemperatureSensor() 
+{
+	delete dht;
+}
+
+
 uint8_t TemperatureSensor::getTemperature() {
-  uint8_t temp = dht.readTemperature(true);
+  uint8_t temp = dht->readTemperature(true);
 
   /* If failed to read from sensor */
   if (isnan(temp)) {
@@ -27,7 +32,7 @@ uint8_t TemperatureSensor::getTemperature() {
 }
 
 uint8_t TemperatureSensor::getHumidity() {
-  uint8_t humidity = dht.readHumidity();
+  uint8_t humidity = dht->readHumidity();
   if (isnan(humidity)) {
     Serial.println("Failed to read from DHT sensor!");
     return -1000;

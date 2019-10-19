@@ -17,12 +17,12 @@ uint8_t humidity = 0;
 uint8_t newTemperature = 0;
 uint8_t newHumidity = 0;
 
-
+int TEMP_SENSOR_PIN = 14;
 #define SERVICE_UUID "c23b7ab5-0301-441a-ac60-1757084297d4"
 #define TEMP_CHARACTERISTIC_UUID "e7ca3a76-9026-4f56-9b35-09da4c3c5eea"
 #define HUMIDITY_CHARACTERISTIC_UUID "8c6fe5b0-0931-41f7-bab5-6b08cb20f524"
 
-TemperatureSensor sensor(14);
+TemperatureSensor sensor(TEMP_SENSOR_PIN);
 
 class MyServerCallbacks: public BLEServerCallbacks {
   void onConnect(BLEServer *pServer) 
