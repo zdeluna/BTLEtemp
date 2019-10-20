@@ -1,3 +1,4 @@
 * linguist-vendored
-/ReactApp/Components/* linguist-vendored=false
+/ReactApp/Components/Home.js linguist-vendored=false
+/ReactApp/Components/BLEManager.js linguist-vendored=false
 /ESP32/* linguist-vendored=false
