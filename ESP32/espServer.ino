@@ -1,7 +1,7 @@
 /* This program will act as the server in sending data via Bluetooth to a client using point 
    to point communication. This program will use the GATT protocol to share data between the server and the client
    by creating characterisitcs for temperature and humidity and broadcasting those values on their respective 
-   characteristics */
+   characteristics. */
 
 #include <BLEDevice.h>
 #include <BLEUtils.h>
