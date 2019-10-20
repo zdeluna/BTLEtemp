@@ -1,3 +1,7 @@
+/* This program will act as the server in sending data via Bluetooth to a client using point 
+   to point communication. This program will use the GATT protocol to share data between the server and the client
+   by creating characterisitcs for temperature and humidity and broadcasting those values on their respective 
+   characteristics */
 
 #include <BLEDevice.h>
 #include <BLEUtils.h>
@@ -37,24 +41,30 @@ class MyServerCallbacks: public BLEServerCallbacks {
   
 };
 
+/* This function will initialize the BLE service and create two characteristics
+   used to store temperature and humidity
+*/
+
 void initBLE() {
 
-  BLEDevice::init("FeatherESP32");
+	BLEDevice::init("FeatherESP32");
 
-  // Set ESP32 as a BLE server
-  pServer = BLEDevice::createServer();
-  pServer->setCallbacks(new MyServerCallbacks());
+  	// Set ESP32 as a BLE server
+  	pServer = BLEDevice::createServer();
+  	pServer->setCallbacks(new MyServerCallbacks());
 
-  // Create a service for the BLE server with UUID
-  BLEService *pService = pServer->createService(SERVICE_UUID);
-  tempCharacteristic = pService->createCharacteristic(
+  	// Create a service for the BLE server with the univerally unique identifier
+  	BLEService *pService = pServer->createService(SERVICE_UUID);
+
+  	// Create two characteristics that will hold the sensor reading values
+  	tempCharacteristic = pService->createCharacteristic(
                 TEMP_CHARACTERISTIC_UUID, 
                 BLECharacteristic::PROPERTY_READ      |
                 BLECharacteristic::PROPERTY_WRITE     |
                 BLECharacteristic::PROPERTY_NOTIFY    |
                 BLECharacteristic::PROPERTY_INDICATE  
                 );
-  humidityCharacteristic = pService->createCharacteristic(
+  	humidityCharacteristic = pService->createCharacteristic(
                 HUMIDITY_CHARACTERISTIC_UUID, 
                 BLECharacteristic::PROPERTY_READ      |
                 BLECharacteristic::PROPERTY_WRITE     |
@@ -62,34 +72,36 @@ void initBLE() {
                 BLECharacteristic::PROPERTY_INDICATE  
                 );
 
-  tempCharacteristic->addDescriptor(new BLE2902());
-  humidityCharacteristic->addDescriptor(new BLE2902());
+	
+  	tempCharacteristic->addDescriptor(new BLE2902());
+  	humidityCharacteristic->addDescriptor(new BLE2902());
 
-  pService->start();
+  	pService->start();
 }
 
 
-
+/* Start to advertising the server so that the client can recognize and read the data stored
+   on the characterisitcs */
+   
 void startAdvertising() {
-  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-  pAdvertising->addServiceUUID(SERVICE_UUID);
+  	BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  	pAdvertising->addServiceUUID(SERVICE_UUID);
  
-  pAdvertising->setScanResponse(true);
-  pAdvertising->setMinPreferred(0x06);
-  pAdvertising->setMinPreferred(0x12);
-  BLEDevice::startAdvertising();
-  Serial.println("Waiting for client to notify"); 
+  	pAdvertising->setScanResponse(true);
+  	pAdvertising->setMinPreferred(0x06);
+  	pAdvertising->setMinPreferred(0x12);
+  	BLEDevice::startAdvertising();
 }
 
 
 void setup() {
 
-  // Start Serial Communication
-  Serial.begin(115200);
-  Serial.println("Start server");
-  initBLE();
-  startAdvertising();
-  }
+  	// Start Serial Communication
+  	Serial.begin(115200);
+  	Serial.println("Start server");
+  	initBLE();
+  	startAdvertising();
+ }
 
 void loop() {
   if (deviceConnected) {
@@ -98,18 +110,12 @@ void loop() {
     newHumidity = sensor.getHumidity();
 
     if (newTemperature != temperature){
-      Serial.println("new temperature reading");
-      Serial.println(newTemperature);
-      Serial.println(temperature);
       temperature = newTemperature;
       tempCharacteristic->setValue((uint8_t*)&temperature, 1);
       tempCharacteristic->notify();
     }
 
     if (newHumidity != humidity){
-      Serial.println("new humidity reading");
-      Serial.println(newHumidity);
-      Serial.println(humidity);
       humidity = newHumidity;
       humidityCharacteristic->setValue((uint8_t*)&humidity, 1);
       humidityCharacteristic->notify(); 
