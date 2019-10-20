@@ -1,5 +1,4 @@
 * linguist-vendored
-/ReactApp/Components/Home.js linguist-vendored=false
 /ReactApp/Components/BLEManager.js linguist-vendored=false
 /ESP32/* linguist-vendored=false
 *.ino linguist-language=C++
