@@ -1,2 +1,3 @@
-*.js linguist-detectable=true
-*.cpp linguist-detectable=true
+* linguist-vendored
+/ReactApp/*.js linguist-detectable=true
+/ESP32/*.cpp linguist-detectable=true
