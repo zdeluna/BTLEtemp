@@ -1,3 +1,3 @@
 * linguist-vendored
-/ReactApp/Components/Home.js linguist-vendored=false
+/ReactApp/Components/* linguist-vendored=false
 /ESP32/* linguist-vendored=false
