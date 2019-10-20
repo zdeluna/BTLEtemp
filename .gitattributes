@@ -1,3 +1,3 @@
 * linguist-vendored
-/ReactApp/Components/Home.js linguist-detectable=true
-/ESP32/TemperatureSensor.cpp linguist-detectable=true
+/ReactApp/Components/Home.js linguist-vendored=false
+/ESP32/TemperatureSensor.cpp linguist-vendored=false
